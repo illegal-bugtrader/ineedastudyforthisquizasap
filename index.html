@@ -1,0 +1,141 @@
+document.addEventListener('DOMContentLoaded', function() {
+    const questionInput = document.getElementById('question-input');
+    const answerInput = document.getElementById('answer-input');
+    const addCardBtn = document.getElementById('add-card-btn');
+    const shuffleBtn = document.getElementById('shuffle-btn');
+    const resetProgressBtn = document.getElementById('reset-progress-btn');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const flashcard = document.getElementById('flashcard');
+    const front = document.querySelector('.front');
+    const back = document.querySelector('.back');
+    const flipBtn = document.querySelector('.flip-btn');
+    const masteredBtn = document.querySelector('.mastered-btn');
+    const cardCounter = document.getElementById('card-counter');
+    const masteredCount = document.getElementById('mastered-count');
+    const totalCards = document.getElementById('total-cards');
+
+    let cards = JSON.parse(localStorage.getItem('flashcards')) || [];
+    let currentCardIndex = 0;
+    let masteredCards = JSON.parse(localStorage.getItem('masteredCards')) || [];
+
+    // Initialize the app
+    function init() {
+        updateCardCounter();
+        updateProgress();
+        if (cards.length > 0) {
+            showCard(currentCardIndex);
+        }
+    }
+
+    // Add a new flashcard
+    addCardBtn.addEventListener('click', function() {
+        const question = questionInput.value.trim();
+        const answer = answerInput.value.trim();
+
+        if (question && answer) {
+            cards.push({ question, answer, mastered: false });
+            localStorage.setItem('flashcards', JSON.stringify(cards));
+            
+            questionInput.value = '';
+            answerInput.value = '';
+            
+            if (cards.length === 1) {
+                showCard(0);
+            }
+            
+            updateCardCounter();
+            updateProgress();
+        }
+    });
+
+    // Show a specific card
+    function showCard(index) {
+        if (cards.length === 0) return;
+        
+        currentCardIndex = index;
+        front.querySelector('p').textContent = cards[index].question;
+        back.querySelector('p').textContent = cards[index].answer;
+        
+        // Reset card to front
+        back.classList.add('hidden');
+        front.classList.remove('hidden');
+        
+        updateCardCounter();
+    }
+
+    // Flip the current card
+    flipBtn.addEventListener('click', function() {
+        back.classList.toggle('hidden');
+        front.classList.toggle('hidden');
+    });
+
+    // Mark card as mastered
+    masteredBtn.addEventListener('click', function() {
+        if (cards.length === 0) return;
+        
+        cards[currentCardIndex].mastered = !cards[currentCardIndex].mastered;
+        localStorage.setItem('flashcards', JSON.stringify(cards));
+        
+        updateProgress();
+    });
+
+    // Navigate to previous card
+    prevBtn.addEventListener('click', function() {
+        if (cards.length === 0) return;
+        
+        currentCardIndex = (currentCardIndex - 1 + cards.length) % cards.length;
+        showCard(currentCardIndex);
+    });
+
+    // Navigate to next card
+    nextBtn.addEventListener('click', function() {
+        if (cards.length === 0) return;
+        
+        currentCardIndex = (currentCardIndex + 1) % cards.length;
+        showCard(currentCardIndex);
+    });
+
+    // Shuffle the cards
+    shuffleBtn.addEventListener('click', function() {
+        if (cards.length === 0) return;
+        
+        for (let i = cards.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [cards[i], cards[j]] = [cards[j], cards[i]];
+        }
+        
+        localStorage.setItem('flashcards', JSON.stringify(cards));
+        currentCardIndex = 0;
+        showCard(currentCardIndex);
+    });
+
+    // Reset progress
+    resetProgressBtn.addEventListener('click', function() {
+        if (cards.length === 0) return;
+        
+        cards.forEach(card => card.mastered = false);
+        localStorage.setItem('flashcards', JSON.stringify(cards));
+        updateProgress();
+    });
+
+    // Update card counter display
+    function updateCardCounter() {
+        cardCounter.textContent = `${currentCardIndex + 1}/${cards.length}`;
+        totalCards.textContent = cards.length;
+    }
+
+    // Update progress display
+    function updateProgress() {
+        if (cards.length === 0) {
+            masteredCount.textContent = '0';
+            return;
+        }
+        
+        const mastered = cards.filter(card => card.mastered).length;
+        masteredCount.textContent = mastered;
+    }
+
+    // Initialize the app
+    init();
+});
