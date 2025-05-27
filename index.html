@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudyFlash | Digital Flashcards</title>
+    <title>Flashcard Maker</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -238,6 +238,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 1rem;
         }
 
         .card-counter {
@@ -263,6 +264,13 @@
             border-bottom: 1px solid var(--gray-light);
         }
 
+        .footer-text {
+            text-align: center;
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -273,7 +281,7 @@
 <body>
     <header>
         <div class="header-content">
-            <a href="#" class="logo">Study<span>Flash</span></a>
+            <a href="#" class="logo">Flashcard <span>Maker</span></a>
             <div>
                 <button class="secondary">Sign In</button>
             </div>
@@ -334,7 +342,9 @@
                         </div>
                     </div>
                     <div class="back">
-                        <div class="card-content"></div>
+                        <div class="card-content">
+                            <!-- Answer will appear here -->
+                        </div>
                     </div>
                     <div class="card-controls">
                         <button class="flip-btn">Flip Card</button>
@@ -346,6 +356,7 @@
                     <button id="prev-btn">Previous</button>
                     <button id="next-btn">Next</button>
                 </div>
+                <div class="footer-text">Help make studying easier!</div>
             </div>
         </div>
     </div>
