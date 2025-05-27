@@ -3,8 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Flashcard App</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Flashcard App</title>
+    <style>
+        /* CSS STYLES GO HERE */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 {
+            color: #333;
+        }
+
+        .flashcard-creator {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        .controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .progress {
+            margin: 15px 0;
+            font-weight: bold;
+        }
+
+        .flashcard-container {
+            perspective: 1000px;
+            margin-bottom: 20px;
+        }
+
+        .flashcard {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 200px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            margin-bottom: 15px;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .front, .back {
+            backface-visibility: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+        }
+
+        .back {
+            transform: rotateY(180deg);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .card-controls {
+            margin-top: 160px;
+            text-align: center;
+        }
+
+        .navigation {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #card-counter {
+            display: inline-block;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -44,6 +159,148 @@
         </div>
     </div>
     
-    <script src="script.js"></script>
+    <script>
+        // JAVASCRIPT CODE GOES HERE
+        document.addEventListener('DOMContentLoaded', function() {
+            const questionInput = document.getElementById('question-input');
+            const answerInput = document.getElementById('answer-input');
+            const addCardBtn = document.getElementById('add-card-btn');
+            const shuffleBtn = document.getElementById('shuffle-btn');
+            const resetProgressBtn = document.getElementById('reset-progress-btn');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const flashcard = document.getElementById('flashcard');
+            const front = document.querySelector('.front');
+            const back = document.querySelector('.back');
+            const flipBtn = document.querySelector('.flip-btn');
+            const masteredBtn = document.querySelector('.mastered-btn');
+            const cardCounter = document.getElementById('card-counter');
+            const masteredCount = document.getElementById('mastered-count');
+            const totalCards = document.getElementById('total-cards');
+
+            let cards = JSON.parse(localStorage.getItem('flashcards')) || [];
+            let currentCardIndex = 0;
+
+            // Initialize the app
+            function init() {
+                updateCardCounter();
+                updateProgress();
+                if (cards.length > 0) {
+                    showCard(currentCardIndex);
+                }
+            }
+
+            // Add a new flashcard
+            addCardBtn.addEventListener('click', function() {
+                const question = questionInput.value.trim();
+                const answer = answerInput.value.trim();
+
+                if (question && answer) {
+                    cards.push({ question, answer, mastered: false });
+                    localStorage.setItem('flashcards', JSON.stringify(cards));
+                    
+                    questionInput.value = '';
+                    answerInput.value = '';
+                    
+                    if (cards.length === 1) {
+                        showCard(0);
+                    }
+                    
+                    updateCardCounter();
+                    updateProgress();
+                }
+            });
+
+            // Show a specific card
+            function showCard(index) {
+                if (cards.length === 0) return;
+                
+                currentCardIndex = index;
+                front.querySelector('p').textContent = cards[index].question;
+                back.querySelector('p').textContent = cards[index].answer;
+                
+                // Reset card to front
+                back.classList.add('hidden');
+                front.classList.remove('hidden');
+                
+                updateCardCounter();
+            }
+
+            // Flip the current card
+            flipBtn.addEventListener('click', function() {
+                back.classList.toggle('hidden');
+                front.classList.toggle('hidden');
+            });
+
+            // Mark card as mastered
+            masteredBtn.addEventListener('click', function() {
+                if (cards.length === 0) return;
+                
+                cards[currentCardIndex].mastered = !cards[currentCardIndex].mastered;
+                localStorage.setItem('flashcards', JSON.stringify(cards));
+                
+                updateProgress();
+            });
+
+            // Navigate to previous card
+            prevBtn.addEventListener('click', function() {
+                if (cards.length === 0) return;
+                
+                currentCardIndex = (currentCardIndex - 1 + cards.length) % cards.length;
+                showCard(currentCardIndex);
+            });
+
+            // Navigate to next card
+            nextBtn.addEventListener('click', function() {
+                if (cards.length === 0) return;
+                
+                currentCardIndex = (currentCardIndex + 1) % cards.length;
+                showCard(currentCardIndex);
+            });
+
+            // Shuffle the cards
+            shuffleBtn.addEventListener('click', function() {
+                if (cards.length === 0) return;
+                
+                for (let i = cards.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [cards[i], cards[j]] = [cards[j], cards[i]];
+                }
+                
+                localStorage.setItem('flashcards', JSON.stringify(cards));
+                currentCardIndex = 0;
+                showCard(currentCardIndex);
+            });
+
+            // Reset progress
+            resetProgressBtn.addEventListener('click', function() {
+                if (cards.length === 0) return;
+                
+                cards.forEach(card => card.mastered = false);
+                localStorage.setItem('flashcards', JSON.stringify(cards));
+                updateProgress();
+            });
+
+            // Update card counter display
+            function updateCardCounter() {
+                cardCounter.textContent = `${currentCardIndex + 1}/${cards.length}`;
+                totalCards.textContent = cards.length;
+            }
+
+            // Update progress display
+            function updateProgress() {
+                if (cards.length === 0) {
+                    masteredCount.textContent = '0';
+                    return;
+                }
+                
+                const mastered = cards.filter(card => card.mastered).length;
+                masteredCount.textContent = mastered;
+            }
+
+            // Initialize the app
+            init();
+        });
+    </script>
 </body>
 </html>
