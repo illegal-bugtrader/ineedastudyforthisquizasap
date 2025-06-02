@@ -151,6 +151,15 @@
             background-color: var(--gray-light);
         }
 
+        button.danger {
+            background-color: var(--warning);
+            color: white;
+        }
+
+        button.danger:hover {
+            background-color: #d91a6b;
+        }
+
         .controls {
             display: flex;
             gap: 1rem;
@@ -282,9 +291,7 @@
     <header>
         <div class="header-content">
             <a href="#" class="logo">Flashcard <span>Maker</span></a>
-            <div>
-                <button class="secondary">Sign In</button>
-            </div>
+            <!-- Removed the sign-in button -->
         </div>
     </header>
 
@@ -349,6 +356,7 @@
                     <div class="card-controls">
                         <button class="flip-btn">Flip Card</button>
                         <button class="mastered-btn">Mark as Mastered</button>
+                        <button class="delete-btn danger">Delete Card</button>
                     </div>
                 </div>
 
@@ -376,6 +384,7 @@
             const backContent = document.querySelector('.back .card-content');
             const flipBtn = document.querySelector('.flip-btn');
             const masteredBtn = document.querySelector('.mastered-btn');
+            const deleteBtn = document.querySelector('.delete-btn');
             const cardCounter = document.getElementById('card-counter');
             const masteredCount = document.getElementById('mastered-count');
             const totalCards = document.getElementById('total-cards');
@@ -453,6 +462,29 @@
                 localStorage.setItem('flashcards', JSON.stringify(cards));
                 
                 updateProgress();
+            });
+
+            // Delete current card
+            deleteBtn.addEventListener('click', function() {
+                if (cards.length === 0) return;
+                
+                if (confirm('Are you sure you want to delete this flashcard?')) {
+                    cards.splice(currentCardIndex, 1);
+                    localStorage.setItem('flashcards', JSON.stringify(cards));
+                    
+                    if (cards.length === 0) {
+                        showCard(0);
+                    } else {
+                        // Adjust current index if we deleted the last card
+                        if (currentCardIndex >= cards.length) {
+                            currentCardIndex = cards.length - 1;
+                        }
+                        showCard(currentCardIndex);
+                    }
+                    
+                    updateCardCounter();
+                    updateProgress();
+                }
             });
 
             // Navigate to previous card
