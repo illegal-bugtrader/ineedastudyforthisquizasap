@@ -280,6 +280,27 @@
             margin-top: 1rem;
         }
 
+        /* New styles for mastered indicator */
+        .mastered-indicator {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 24px;
+            height: 24px;
+            background-color: var(--success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .mastered .mastered-indicator {
+            opacity: 1;
+        }
+
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -291,7 +312,6 @@
     <header>
         <div class="header-content">
             <a href="#" class="logo">Flashcard <span>Maker</span></a>
-            <!-- Removed the sign-in button -->
         </div>
     </header>
 
@@ -343,6 +363,7 @@
                 </div>
 
                 <div class="flashcard" id="flashcard">
+                    <div class="mastered-indicator">✓</div>
                     <div class="front">
                         <div class="card-content">
                             No cards yet. Add some flashcards to get started!
@@ -436,6 +457,7 @@
                     frontContent.textContent = 'No cards yet. Add some flashcards to get started!';
                     backContent.textContent = '';
                     flashcard.classList.remove('flipped');
+                    flashcard.classList.remove('mastered');
                     return;
                 }
                 
@@ -445,6 +467,13 @@
                 
                 // Reset card to front
                 flashcard.classList.remove('flipped');
+                
+                // Update mastered status
+                if (cards[index].mastered) {
+                    flashcard.classList.add('mastered');
+                } else {
+                    flashcard.classList.remove('mastered');
+                }
                 
                 updateCardCounter();
             }
@@ -460,6 +489,13 @@
                 
                 cards[currentCardIndex].mastered = !cards[currentCardIndex].mastered;
                 localStorage.setItem('flashcards', JSON.stringify(cards));
+                
+                // Update visual indicator
+                if (cards[currentCardIndex].mastered) {
+                    flashcard.classList.add('mastered');
+                } else {
+                    flashcard.classList.remove('mastered');
+                }
                 
                 updateProgress();
             });
@@ -523,6 +559,12 @@
                 
                 cards.forEach(card => card.mastered = false);
                 localStorage.setItem('flashcards', JSON.stringify(cards));
+                
+                // Update all mastered indicators
+                if (cards.length > 0) {
+                    flashcard.classList.remove('mastered');
+                }
+                
                 updateProgress();
             });
 
